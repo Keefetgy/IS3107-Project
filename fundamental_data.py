@@ -14,23 +14,53 @@ apikey2 = '9ZLATZ1IC6GHUVAK'
 apikey3 = '6I2Y9UULKVW6XGX5'
 apikey4 = 'RYL3ULY9P5ZOJVUX'
 
-def dty():
-    url = 'https://www.alphavantage.co/query?function=TREASURY_YIELD&interval=daily&maturity=10year&apikey={key}' #changed to daily from default
+def dty(key):
+    url = f'https://www.alphavantage.co/query?function=TREASURY_YIELD&interval=daily&maturity=10year&apikey={key}' #changed to daily from default
     r = requests.get(url)
     data = r.json()
+    time_series_data = data["data"]
+    # Convert to DataFrame
+    df = pd.DataFrame(time_series_data).T
+    # Reset index and rename columns
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'Date'}, inplace=True)
+    return df.head(1000)
 
 
-def eps():
-    url = 'https://www.alphavantage.co/query?function=EARNINGS&symbol={ticker}&apikey={key}'
+def eps(key):
+    url = f'https://www.alphavantage.co/query?function=EARNINGS&symbol={ticker}&apikey={key}'
     r = requests.get(url)
     data = r.json()
+    time_series_data = data["quarterlyEarnings"]
+    # Convert to DataFrame
+    df = pd.DataFrame(time_series_data).T
+    # Reset index and rename columns
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'Date'}, inplace=True)
+    return df
 
-def gdp():
-    url = 'https://www.alphavantage.co/query?function=REAL_GDP&interval=quarterly&apikey={key}'
+def realgdppercapita(key):
+    url = f'https://www.alphavantage.co/query?function=REAL_GDP_PER_CAPITA&apikey={key}'
     r = requests.get(url)
     data = r.json()
+    time_series_data = data["data"]
+    # Convert to DataFrame
+    df = pd.DataFrame(time_series_data).T
+    # Reset index and rename columns
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'Date'}, inplace=True)
+    return df
+    
 
 def inflation():
-    url = 'https://www.alphavantage.co/query?function=INFLATION&apikey={key}'
+    url = f'https://www.alphavantage.co/query?function=INFLATION&apikey={key}'
     r = requests.get(url)
     data = r.json()
+     time_series_data = data["data"]
+    # Convert to DataFrame
+    df = pd.DataFrame(time_series_data).T
+    # Reset index and rename columns
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'Date'}, inplace=True)
+    return df
+    
