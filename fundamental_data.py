@@ -52,7 +52,7 @@ def realgdppercapita(key):
     return df
     
 
-def inflation():
+def inflation(key):
     url = f'https://www.alphavantage.co/query?function=INFLATION&apikey={key}'
     r = requests.get(url)
     data = r.json()
