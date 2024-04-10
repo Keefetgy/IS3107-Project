@@ -9,13 +9,13 @@ import requests
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 import yfinance as yf
 
-dtykey = '6AHG15XLB86AMCZX'
-epskey = '9ZLATZ1IC6GHUVAK'
-gdpkey = '6I2Y9UULKVW6XGX5'
-inflationkey = 'RYL3ULY9P5ZOJVUX'
-cpkey = 'L0S0FYJGSKZLWC8R' 
-rsikey = '63TMPZD2NJJ51WFA'
-smakey = 'YBATNF7ZMC9EJ246'
+# dtykey = '6AHG15XLB86AMCZX'
+# epskey = '9ZLATZ1IC6GHUVAK'
+# gdpkey = '6I2Y9UULKVW6XGX5'
+# inflationkey = 'RYL3ULY9P5ZOJVUX'
+# cpkey = 'L0S0FYJGSKZLWC8R' 
+# rsikey = '63TMPZD2NJJ51WFA'
+key = 'REV6KO6RA6ADQDF6'
 
 # Constants
 OUTPUT_DIR = '/tmp'
@@ -45,7 +45,7 @@ def fetch_and_get_top_stocks():
     
     ticker_market_caps.sort(key=lambda x: x[1], reverse=True)  # Sort tickers by market cap in descending order
     
-    top_tickers = [ticker[0] for ticker in ticker_market_caps[:5]]  # Extract top 5 tickers
+    top_tickers = [ticker[0] for ticker in ticker_market_caps[:5]]  # Extract top 10 tickers
     
     return pd.DataFrame({'Ticker': top_tickers})
 
@@ -59,7 +59,7 @@ def get_market_cap(ticker):
         return None
 
 def dty():
-    url = f'https://www.alphavantage.co/query?function=TREASURY_YIELD&interval=daily&maturity=10year&apikey={dtykey}' #changed to daily from default
+    url = f'https://www.alphavantage.co/query?function=TREASURY_YIELD&interval=daily&maturity=10year&apikey={key}' #changed to daily from default
     r = requests.get(url)
     data = r.json()
     time_series_data = data["data"]
@@ -72,7 +72,7 @@ def dty():
 
 
 def eps(ticker):
-    url = f'https://www.alphavantage.co/query?function=EARNINGS&symbol={ticker}&apikey={epskey}'
+    url = f'https://www.alphavantage.co/query?function=EARNINGS&symbol={ticker}&apikey={key}'
     r = requests.get(url)
     data = r.json()
     time_series_data = data["quarterlyEarnings"]
@@ -84,7 +84,7 @@ def eps(ticker):
     return df
 
 def realgdppercapita():
-    url = f'https://www.alphavantage.co/query?function=REAL_GDP_PER_CAPITA&apikey={gdpkey}'
+    url = f'https://www.alphavantage.co/query?function=REAL_GDP_PER_CAPITA&apikey={key}'
     r = requests.get(url)
     data = r.json()
     time_series_data = data["data"]
@@ -97,7 +97,7 @@ def realgdppercapita():
     
 
 def inflation():
-    url = f'https://www.alphavantage.co/query?function=INFLATION&apikey={inflationkey}'
+    url = f'https://www.alphavantage.co/query?function=INFLATION&apikey={key}'
     r = requests.get(url)
     data = r.json()
     time_series_data = data["data"]
@@ -109,7 +109,7 @@ def inflation():
     return df
 
 def cp(ticker):
-    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={cpkey}'
+    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={key}'
     # url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&outputsize=full&apikey=demo' # for demo data
     r = requests.get(url)
     data = r.json()
@@ -137,7 +137,7 @@ def cp(ticker):
     return df.head(1000)
 
 def rsi(ticker):
-    url = f'https://www.alphavantage.co/query?function=RSI&symbol={ticker}&interval=daily&time_period=10&series_type=open&apikey={rsikey}' #changed to daily
+    url = f'https://www.alphavantage.co/query?function=RSI&symbol={ticker}&interval=daily&time_period=10&series_type=open&apikey={key}' #changed to daily
     r = requests.get(url)
     data = r.json()
     # Extract the time series data from the response JSON
@@ -155,7 +155,7 @@ def rsi(ticker):
     return df.head(1000)
 
 def sma(ticker):
-    url = f'https://www.alphavantage.co/query?function=SMA&symbol=IBM&interval=daily&time_period=10&series_type=open&apikey={smakey}' #changed to daily
+    url = f'https://www.alphavantage.co/query?function=SMA&symbol=IBM&interval=daily&time_period=10&series_type=open&apikey={key}' #changed to daily
     r = requests.get(url)
     data = r.json()
     # Extract the time series data from the response JSON
