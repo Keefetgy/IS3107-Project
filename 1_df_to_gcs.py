@@ -45,7 +45,7 @@ def fetch_and_get_top_stocks():
     
     ticker_market_caps.sort(key=lambda x: x[1], reverse=True)  # Sort tickers by market cap in descending order
     
-    top_tickers = [ticker[0] for ticker in ticker_market_caps[:10]]  # Extract top 10 tickers
+    top_tickers = [ticker[0] for ticker in ticker_market_caps[:5]]  # Extract top 5 tickers
     
     return pd.DataFrame({'Ticker': top_tickers})
 
