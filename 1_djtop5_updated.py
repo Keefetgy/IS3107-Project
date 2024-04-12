@@ -68,9 +68,6 @@ def dty():
     time_series_data = data["data"]
     # Convert to DataFrame
     df = pd.DataFrame(time_series_data)
-    # Reset index and rename columns
-    df.reset_index(inplace=True)
-    df.rename(columns={'index': 'Date'}, inplace=True)
     return df.head(1000)
 
 
@@ -81,9 +78,6 @@ def eps(ticker):
     time_series_data = data["quarterlyEarnings"]
     # Convert to DataFrame
     df = pd.DataFrame(time_series_data)
-    # Reset index and rename columns
-    df.reset_index(inplace=True)
-    df.rename(columns={'index': 'Date'}, inplace=True)
     # Create a new column for the ticker symbol
     df['Ticker'] = ticker
     cols = list(df.columns)
@@ -97,10 +91,7 @@ def realgdppercapita():
     data = r.json()
     time_series_data = data["data"]
     # Convert to DataFrame
-    df = pd.DataFrame(time_series_data).T
-    # Reset index and rename columns
-    df.reset_index(inplace=True)
-    df.rename(columns={'index': 'Date'}, inplace=True)
+    df = pd.DataFrame(time_series_data)
     return df
     
 
@@ -110,10 +101,7 @@ def inflation():
     data = r.json()
     time_series_data = data["data"]
     # Convert to DataFrame
-    df = pd.DataFrame(time_series_data).T
-    # Reset index and rename columns
-    df.reset_index(inplace=True)
-    df.rename(columns={'index': 'Date'}, inplace=True)
+    df = pd.DataFrame(time_series_data)
     return df
 
 def cp(ticker):
@@ -213,7 +201,7 @@ def save_data_for_funcs_with_ticker():
     return file_paths
 
 with DAG(
-    dag_id='1_fetch_and_get_top_stocks',
+    dag_id='fetch_and_get_top_stocks',
     start_date=datetime(2024,1,1),
     catchup=False
 ) as dag:
