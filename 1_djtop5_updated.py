@@ -95,8 +95,8 @@ def realgdppercapita():
     return df
     
 
-def inflation():
-    url = f'https://www.alphavantage.co/query?function=INFLATION&apikey={key}'
+def cpi():
+    url = f'https://www.alphavantage.co/query?function=CPI&interval=monthly&apikey={key}'
     r = requests.get(url)
     data = r.json()
     time_series_data = data["data"]
@@ -105,7 +105,7 @@ def inflation():
     return df
 
 def cp(ticker):
-    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={key}'
+    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&outputsize=full&apikey={key}'
     # url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&outputsize=full&apikey=demo' # for demo data
     r = requests.get(url)
     data = r.json()
@@ -169,7 +169,7 @@ def sma(ticker):
     return df.head(1000)
 
 def save_data_for_funcs_without_ticker():
-    functions_to_run = [dty, realgdppercapita, inflation]  # Functions without ticker requirement
+    functions_to_run = [dty, realgdppercapita, cpi]  # Functions without ticker requirement
     file_paths = []
     for func in functions_to_run:
         df = func()  # Assuming each function returns a DataFrame
@@ -225,7 +225,7 @@ with DAG(
     )
 
     # Dynamically creating LocalFilesystemToGCSOperator tasks for uploading
-    for func_name in ['dty', 'realgdppercapita', 'inflation', 'eps', 'cp', 'rsi', 'sma']:
+    for func_name in ['dty', 'realgdppercapita', 'cpi', 'eps', 'cp', 'rsi', 'sma']:
         upload_task = LocalFilesystemToGCSOperator(
             task_id=f'upload_{func_name}_to_gcs',
             gcp_conn_id='is3107project',
@@ -234,7 +234,7 @@ with DAG(
             dst=f'data/{func_name}.csv'
         )
 
-        if func_name in ['dty', 'realgdppercapita', 'inflation']:
+        if func_name in ['dty', 'realgdppercapita', 'cpi']:
             save_data_wo_ticker_task >> upload_task
         else:
             save_data_w_ticker_task >> upload_task
