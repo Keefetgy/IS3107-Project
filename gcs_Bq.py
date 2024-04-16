@@ -64,8 +64,8 @@ def save_tickers(ticker_df, directory=OUTPUT_DIR, filename=OUTPUT_FILE):
 # Define DAG
 with DAG('is3107_data_pipeline', default_args=default_args, schedule_interval=None, catchup=False) as dag:
 
-    fetch_and_save_ticker = PythonOperator(
-        task_id='fetch_and_save_ticker', 
+    start_task = PythonOperator(
+        task_id='start_task', 
         python_callable=save_tickers, 
         op_kwargs={'ticker_df': fetch_and_get_top_stocks()},
     )
@@ -166,12 +166,12 @@ with DAG('is3107_data_pipeline', default_args=default_args, schedule_interval=No
         allow_quoted_newlines=True
     )
 
-    gcs_to_bq_inf= GCSToBigQueryOperator(
-        task_id='gcs_to_bq_inf',
+    gcs_to_bq_cpi= GCSToBigQueryOperator(
+        task_id='gcs_to_bq_cpi',
         gcp_conn_id='is3107project',
         bucket='is3107_grp11',
-        source_objects=['data/inflation.csv'],
-        destination_project_dataset_table='is3107-418111.proj_data.inflation',
+        source_objects=['data/cpi.csv'],
+        destination_project_dataset_table='is3107-418111.proj_data.cpi',
         
         schema_fields=[
         {'name': 'Date', 'type': 'DATE', 'mode': 'REQUIRED'},
@@ -203,23 +203,23 @@ with DAG('is3107_data_pipeline', default_args=default_args, schedule_interval=No
     join_query = """
     CREATE OR REPLACE TABLE `is3107-418111.proj_data.joinedtable`
     AS 
-    select a.ticker,a.date,a.close,a.volume,b.rsi,d.sma,e.value as TreasuryYield,f.value as inflation , c.reportedeps,c.estimatedeps,c.surprise,c.surprisepercentage from is3107-418111.proj_data.cp a 
-    join is3107-418111.proj_data.rsi b on a.ticker=b.ticker and a.date=b.date
-    join is3107-418111.proj_data.sma d on d.ticker=a.ticker and d.date = a.date
-    join is3107-418111.proj_data.dty e on e.date=a.date
-    join (SELECT 
+    select a.ticker,a.date,a.close,a.volume,b.rsi,d.sma,e.value as TreasuryYield,f.value as Cpi , c.reportedeps,c.estimatedeps,c.surprise,c.surprisepercentage,g.value as RealGdpPerCapita from is3107-418111.proj_data.cp a 
+    left join is3107-418111.proj_data.rsi b on a.ticker=b.ticker and a.date=b.date
+    left join is3107-418111.proj_data.sma d on d.ticker=a.ticker and d.date = a.date
+    left join is3107-418111.proj_data.dty e on e.date=a.date
+    left join (SELECT 
         Date,
         Value,
         LEAD(Date) OVER (ORDER BY Date) AS next_date
     FROM 
-        `is3107-418111.proj_data.inflation`) as f on a.date > f.Date
+        `is3107-418111.proj_data.cpi`) as f on a.date > f.Date
     AND (a.Date < f.next_date OR f.next_date IS NULL)
-    join (SELECT Ticker, reportedDate,
+    left join (SELECT Ticker, reportedDate,
             LEAD(reportedDate) OVER (PARTITION BY Ticker ORDER BY reportedDate) AS next_date,reportedeps,estimatedeps,surprise,surprisepercentage
         FROM is3107-418111.proj_data.eps ) as c  ON a.Ticker = c.Ticker
     AND a.date > c.reportedDate
     AND (a.Date < c.next_date OR c.next_date IS NULL)
-    join (SELECT 
+    left join (SELECT 
         Date,
         Value,
         LEAD(Date) OVER (ORDER BY Date) AS next_date
@@ -255,4 +255,4 @@ with DAG('is3107_data_pipeline', default_args=default_args, schedule_interval=No
 
 
     # Define task dependencies
-    fetch_and_save_ticker>>gcs_to_bq_cp>>gcs_to_bq_rsi>>gcs_to_bq_eps>>gcs_to_bq_sma>>gcs_to_bq_dty>>gcs_to_bq_rgpc>>gcs_to_bq_inf>>join_table>>export_to_gcs
+    start_task>>gcs_to_bq_cp>>gcs_to_bq_rsi>>gcs_to_bq_eps>>gcs_to_bq_sma>>gcs_to_bq_dty>>gcs_to_bq_rgpc>>gcs_to_bq_cpi>>join_table>>export_to_gcs
