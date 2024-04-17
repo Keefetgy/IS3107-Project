@@ -151,7 +151,7 @@ def rsi(ticker):
     return df.head(1000)
 
 def sma(ticker):
-    url = f'https://www.alphavantage.co/query?function=SMA&symbol=IBM&interval=daily&time_period=10&series_type=open&apikey={key}' #changed to daily
+    url = f'https://www.alphavantage.co/query?function=SMA&symbol={ticker}&interval=daily&time_period=10&series_type=open&apikey={key}' #changed to daily
     r = requests.get(url)
     data = r.json()
     # Extract the time series data from the response JSON
