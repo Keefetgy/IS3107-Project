@@ -68,7 +68,7 @@ def dty():
     time_series_data = data["data"]
     # Convert to DataFrame
     df = pd.DataFrame(time_series_data)
-    return df.head(1000)
+    return df.head(1200)
 
 
 def eps(ticker):
