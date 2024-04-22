@@ -85,7 +85,7 @@ def eps(ticker):
     df = df[cols]
     return df
 
-def realgdppercapita():
+def rgpc():
     url = f'https://www.alphavantage.co/query?function=REAL_GDP_PER_CAPITA&apikey={key}'
     r = requests.get(url)
     data = r.json()
@@ -169,7 +169,7 @@ def sma(ticker):
     return df.head(1000)
 
 def save_data_for_funcs_without_ticker():
-    functions_to_run = [dty, realgdppercapita, cpi]  # Functions without ticker requirement
+    functions_to_run = [dty, rgpc, cpi]  # Functions without ticker requirement
     file_paths = []
     for func in functions_to_run:
         df = func()  # Assuming each function returns a DataFrame
@@ -201,7 +201,7 @@ def save_data_for_funcs_with_ticker():
     return file_paths
 
 with DAG(
-    dag_id='fetch_and_get_top_stocks',
+    dag_id='fetch_api_to_gcs',
     start_date=datetime(2024,1,1),
     catchup=False
 ) as dag:
@@ -225,7 +225,7 @@ with DAG(
     )
 
     # Dynamically creating LocalFilesystemToGCSOperator tasks for uploading
-    for func_name in ['dty', 'realgdppercapita', 'cpi', 'eps', 'cp', 'rsi', 'sma']:
+    for func_name in ['dty', 'rgpc', 'cpi', 'eps', 'cp', 'rsi', 'sma']:
         upload_task = LocalFilesystemToGCSOperator(
             task_id=f'upload_{func_name}_to_gcs',
             gcp_conn_id='is3107project',
@@ -234,7 +234,7 @@ with DAG(
             dst=f'data/{func_name}.csv'
         )
 
-        if func_name in ['dty', 'realgdppercapita', 'cpi']:
+        if func_name in ['dty', 'rgpc', 'cpi']:
             save_data_wo_ticker_task >> upload_task
         else:
             save_data_w_ticker_task >> upload_task
