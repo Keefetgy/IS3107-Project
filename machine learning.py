@@ -104,7 +104,7 @@ def run_ml():
     test_data.drop(columns=['price_increase'], inplace=True)
     test_data.to_csv(os.path.join(OUTPUT_DIR, 'finaltable.csv'),index=False)
 
-with DAG('is3107_machinelearning_pipeline', default_args=default_args, schedule_interval=None, catchup=False) as dag:
+with DAG('is3107_gcs_to_ml', default_args=default_args, schedule_interval=None, catchup=False) as dag:
 
     start_task = PythonOperator(
         task_id='start_task', 
