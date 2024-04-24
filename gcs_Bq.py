@@ -203,7 +203,7 @@ with DAG('is3107_data_pipeline', default_args=default_args, schedule_interval=No
     join_query = """
     CREATE OR REPLACE TABLE `is3107-418111.proj_data.joinedtable`
     AS 
-    select a.ticker,a.date,a.close,a.volume,b.rsi,d.sma,e.value as TreasuryYield,f.value as Cpi , c.reportedeps,c.estimatedeps,c.surprise,c.surprisepercentage,g.value as RealGdpPerCapita from is3107-418111.proj_data.cp a 
+    select a.ticker,a.date,a.close,a.volume,b.rsi,d.sma,e.value as TreasuryYield,f.value as Cpi ,c.surprise as EPS_Diff,g.value as RealGdpPerCapita from is3107-418111.proj_data.cp a 
     left join is3107-418111.proj_data.rsi b on a.ticker=b.ticker and a.date=b.date
     left join is3107-418111.proj_data.sma d on d.ticker=a.ticker and d.date = a.date
     left join is3107-418111.proj_data.dty e on e.date=a.date
@@ -212,12 +212,12 @@ with DAG('is3107_data_pipeline', default_args=default_args, schedule_interval=No
         Value,
         LEAD(Date) OVER (ORDER BY Date) AS next_date
     FROM 
-        `is3107-418111.proj_data.cpi`) as f on a.date > f.Date
+        `is3107-418111.proj_data.cpi`) as f on a.date >= f.Date
     AND (a.Date < f.next_date OR f.next_date IS NULL)
     left join (SELECT Ticker, reportedDate,
             LEAD(reportedDate) OVER (PARTITION BY Ticker ORDER BY reportedDate) AS next_date,reportedeps,estimatedeps,surprise,surprisepercentage
         FROM is3107-418111.proj_data.eps ) as c  ON a.Ticker = c.Ticker
-    AND a.date > c.reportedDate
+    AND a.date >= c.reportedDate
     AND (a.Date < c.next_date OR c.next_date IS NULL)
     left join (SELECT 
         Date,
@@ -226,8 +226,10 @@ with DAG('is3107_data_pipeline', default_args=default_args, schedule_interval=No
     FROM 
         `is3107-418111.proj_data.rgpc`
 
-    ) g on a.date > g.Date
+    ) g on a.date >= g.Date
     AND (a.Date < g.next_date OR g.next_date IS NULL)
+    ORDER BY 
+    a.date DESC ,a.ticker ASC;
 
     """
 
