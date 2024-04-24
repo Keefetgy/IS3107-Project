@@ -62,7 +62,7 @@ def save_tickers(ticker_df, directory=OUTPUT_DIR, filename=OUTPUT_FILE):
 
 
 # Define DAG
-with DAG('is3107_data_pipeline', default_args=default_args, schedule_interval=None, catchup=False) as dag:
+with DAG('is3107_gcs_to_bq', default_args=default_args, schedule_interval=None, catchup=False) as dag:
 
     start_task = PythonOperator(
         task_id='start_task', 
