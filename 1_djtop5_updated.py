@@ -238,28 +238,3 @@ with DAG(
             save_data_wo_ticker_task >> upload_task
         else:
             fetch_top5_tickers >> save_data_w_ticker_task >> upload_task
-    
-    local_to_gcs = LocalFilesystemToGCSOperator(
-        task_id='local_to_gcs',
-        gcp_conn_id = 'is3107project',
-        bucket='is3107_grp11',
-        src='dags/data/top_5_ticker.csv',
-        dst='top_5_tickers'
-    )
-    
-    gcs_to_bq = GCSToBigQueryOperator(
-        task_id='gcs_to_bq',
-        gcp_conn_id='is3107project',
-        bucket='is3107_grp11',
-        source_objects=['top_5_tickers'],
-        destination_project_dataset_table='is3107-418111.proj_data.top_5_tickers',
-        schema_fields=[
-            {'name': 'Ticker', 'type': 'STRING', 'mode': 'NULLABLE'}
-        ],
-        create_disposition='CREATE_IF_NEEDED',
-        write_disposition='WRITE_TRUNCATE',
-        skip_leading_rows=1,
-        allow_quoted_newlines=True
-    )
-    
-fetch_top5_tickers >> local_to_gcs >> gcs_to_bq
