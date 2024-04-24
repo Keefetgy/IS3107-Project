@@ -206,8 +206,8 @@ with DAG(
     catchup=False
 ) as dag:
     
-    fetch_and_save_ticker = PythonOperator(
-        task_id='fetch_and_save_ticker', 
+    fetch_top5_tickers = PythonOperator(
+        task_id='fetch_top5_tickers', 
         python_callable=save_tickers, 
         op_kwargs={'ticker_df': fetch_and_get_top_stocks()},
     )
@@ -237,7 +237,7 @@ with DAG(
         if func_name in ['dty', 'rgpc', 'cpi']:
             save_data_wo_ticker_task >> upload_task
         else:
-            save_data_w_ticker_task >> upload_task
+            fetch_top5_tickers >> save_data_w_ticker_task >> upload_task
     
     local_to_gcs = LocalFilesystemToGCSOperator(
         task_id='local_to_gcs',
@@ -262,4 +262,4 @@ with DAG(
         allow_quoted_newlines=True
     )
     
-fetch_and_save_ticker >> local_to_gcs >> gcs_to_bq
+fetch_top5_tickers >> local_to_gcs >> gcs_to_bq
